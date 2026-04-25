@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ═══════════════════════════════════════════════════════════════
-#  TEMPO TERMINAL · Installer v3.1
+#  TEMPO TERMINAL · Installer v3.1.0
 #
 #  Built by Sup Cartel · discord.gg/supc
 # ═══════════════════════════════════════════════════════════════
@@ -9,9 +9,9 @@
 #  Run from inside the repository:
 #    bash install.sh
 #
-#  v3.1 — copies sources from this repo instead of embedding outdated
-#         heredocs. Drops the bogus `tempo add wallet` step (no such
-#         command exists in Tempo CLI; `tempo wallet login` does both).
+#  v3.1.0 — copies sources from this repo instead of embedding outdated
+#           heredocs. Drops the bogus `tempo add wallet` step (no such
+#           command exists in Tempo CLI; `tempo wallet login` does both).
 # ═══════════════════════════════════════════════════════════════
 
 set -euo pipefail
@@ -75,7 +75,7 @@ case "$(uname -s)" in
         ;;
 esac
 
-INSTALL_DIR="$HOME/tempo-bot"
+INSTALL_DIR="$HOME/tempo-terminal"
 
 # ───────────────────────────────────────────────────────────────
 # 2. Verify the source files we're about to copy actually exist

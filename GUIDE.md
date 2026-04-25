@@ -46,7 +46,7 @@ bash install.sh
 
 The script:
 - installs Homebrew (if needed), Node.js 20, jq, and Tempo CLI;
-- copies `server.js`, `telegram-bot.js`, `tempo-cli.js`, `public/index.html` into `~/tempo-bot/`;
+- copies `server.js`, `telegram-bot.js`, `tempo-cli.js`, `public/index.html` into `~/tempo-terminal/`;
 - creates `start.sh` / `start-telegram.sh`, default `.env`, `package.json`, `.gitignore`;
 - runs `npm install`.
 
@@ -79,7 +79,7 @@ Pick **Network** (Base / Ethereum / Solana / Optimism / Unichain / Abstract / Ar
 - **@userinfobot** → `/start` → copy your numeric ID
 
 ```bash
-nano ~/tempo-bot/.env
+nano ~/tempo-terminal/.env
 ```
 
 ```env
@@ -95,13 +95,13 @@ Multiple users: `ALLOWED_USERS=111111,222222,333333`
 
 **Web UI:**
 ```bash
-cd ~/tempo-bot && ./start.sh
+cd ~/tempo-terminal && ./start.sh
 ```
 Open http://localhost:3000
 
 **Telegram (separate terminal):**
 ```bash
-cd ~/tempo-bot && ./start-telegram.sh
+cd ~/tempo-terminal && ./start-telegram.sh
 ```
 
 ### 6. Auto-start (optional, macOS)
@@ -118,14 +118,14 @@ cd ~/tempo-bot && ./start-telegram.sh
   <array>
     <string>/bin/bash</string>
     <string>-lc</string>
-    <string>cd ~/tempo-bot && node server.js</string>
+    <string>cd ~/tempo-terminal && node server.js</string>
   </array>
   <key>EnvironmentVariables</key>
   <dict>
     <key>PATH</key>
     <string>/Users/YOUR_USER/.tempo/bin:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin</string>
   </dict>
-  <key>WorkingDirectory</key><string>/Users/YOUR_USER/tempo-bot</string>
+  <key>WorkingDirectory</key><string>/Users/YOUR_USER/tempo-terminal</string>
   <key>RunAtLoad</key><true/>
   <key>KeepAlive</key><true/>
   <key>StandardOutPath</key><string>/tmp/tempo.log</string>
@@ -193,7 +193,7 @@ What happens (5–8 min on a fresh box):
 - Installs Node.js 20 LTS
 - Installs `jq`
 - Installs Tempo CLI to `~/.tempo/bin/tempo`
-- Copies the bot to `~/tempo-bot/`
+- Copies the bot to `~/tempo-terminal/`
 - `npm install`
 
 Authorize your wallet:
@@ -210,13 +210,13 @@ tempo wallet fund           # deposit $10–40 USDC (Base recommended)
 ## Stage 3 · Launch
 
 ```bash
-cd ~/tempo-bot
+cd ~/tempo-terminal
 ./start.sh                  # Web UI → http://localhost:3000 (open in any Windows browser)
 ```
 
 For Telegram (separate WSL terminal):
 ```bash
-cd ~/tempo-bot && ./start-telegram.sh
+cd ~/tempo-terminal && ./start-telegram.sh
 ```
 
 Stop either with `Ctrl+C`.
@@ -227,7 +227,7 @@ Stop either with `Ctrl+C`.
 - **@userinfobot** → `/start` → copy your numeric ID
 
 ```bash
-nano ~/tempo-bot/.env
+nano ~/tempo-terminal/.env
 ```
 Fill in:
 ```env
@@ -243,6 +243,21 @@ Save (`Ctrl+O` → Enter → `Ctrl+X`), then `./start-telegram.sh`.
 ### Native Windows installer (advanced, optional)
 
 The repo also ships [`install.ps1`](./install.ps1) for users who want the bot to run as a **native Windows Node.js process** with only the `tempo` CLI in WSL. The bridge `wsl tempo …` adds ~50–200 ms per signed request but lets you keep `.env` and logs on the Windows filesystem (Notepad-friendly). Use only if you specifically need that hybrid setup; otherwise the WSL-native path above is simpler and equally fast.
+
+```powershell
+# From inside the project folder, in regular PowerShell:
+powershell -ExecutionPolicy Bypass -File install.ps1
+```
+
+After it finishes (Node 20 installed natively, Tempo CLI installed inside WSL, sources copied to `%USERPROFILE%\tempo-terminal`), launch from PowerShell:
+
+```powershell
+cd $env:USERPROFILE\tempo-terminal
+node server.js              # Web UI  → http://localhost:3000
+node telegram-bot.js        # Telegram (run in a second PowerShell window)
+```
+
+Wallet operations still go through WSL — call them as `wsl tempo wallet login`, `wsl tempo wallet -t whoami`, `wsl tempo wallet fund` from PowerShell, or open Ubuntu and run them directly.
 
 ---
 
@@ -301,7 +316,7 @@ Default: `openai/gpt-4o-mini`. For serious analysis: `anthropic/claude-4.6-sonne
 
 **`409 Conflict`** in Telegram → Two instances running. `pkill -f "node telegram-bot.js"`, start one.
 
-**`/balance` returns null USDC, only address visible** → You are running an old build. The fix landed in v3.1 — make sure `server.js` and `telegram-bot.js` contain the JSON-first whoami parser (look for `parseWhoami` / `JSON.parse(stdout)` in the wallet code).
+**`/balance` returns null USDC, only address visible** → You are running an old build. The fix landed in v3.1.0 — make sure `server.js` and `telegram-bot.js` contain the JSON-first whoami parser (look for `parseWhoami` / `JSON.parse(stdout)` in the wallet code).
 
 **Bot not responding** → Check `tempo wallet -t whoami` (balance? `ready: true`?), check logs in terminal output / `bot.log`.
 
@@ -326,7 +341,7 @@ Default: `openai/gpt-4o-mini`. For serious analysis: `anthropic/claude-4.6-sonne
 
 **`node: command not found` in WSL** → Node.js wasn't installed correctly. Re-run `bash install.sh` or install manually: `curl -fsSL https://deb.nodesource.com/setup_20.x \| sudo -E bash - && sudo apt-get install -y nodejs`.
 
-**Web UI loads but `/balance` is empty** → Check `tempo wallet -t whoami` in WSL — if it errors, your wallet isn't logged in. If it succeeds, restart the bot: `Ctrl+C` then `./start.sh` (the JSON-first balance parser landed in v3.1; older builds returned `usdc: null` against modern Tempo CLI output).
+**Web UI loads but `/balance` is empty** → Check `tempo wallet -t whoami` in WSL — if it errors, your wallet isn't logged in. If it succeeds, restart the bot: `Ctrl+C` then `./start.sh` (the JSON-first balance parser landed in v3.1.0; older builds returned `usdc: null` against modern Tempo CLI output).
 
 ### General
 
@@ -344,7 +359,7 @@ Default: `openai/gpt-4o-mini`. For serious analysis: `anthropic/claude-4.6-sonne
 
 ### macOS / Linux (after install.sh)
 ```
-~/tempo-bot/
+~/tempo-terminal/
 ├── server.js, telegram-bot.js, tempo-cli.js, public/index.html
 ├── package.json
 ├── .env                 ← settings (private, not tracked by git)
@@ -357,14 +372,14 @@ Default: `openai/gpt-4o-mini`. For serious analysis: `anthropic/claude-4.6-sonne
 ### Windows / WSL (after install.sh)
 Same layout as macOS / Linux — everything lives inside the WSL home:
 ```
-~/tempo-bot/                 (= \\wsl$\Ubuntu\home\YOUR_LINUX_USERNAME\tempo-bot)
+~/tempo-terminal/                 (= \\wsl$\Ubuntu\home\YOUR_LINUX_USERNAME\tempo-terminal)
 ├── server.js, telegram-bot.js, tempo-cli.js, public/index.html
 ├── package.json
 ├── .env, bot-state.json, spending.csv
 ├── start.sh
 └── start-telegram.sh
 ```
-You can browse those files from Windows Explorer at `\\wsl$\Ubuntu\home\<your-linux-user>\tempo-bot\` if you ever need to edit `.env` from Notepad instead of `nano`.
+You can browse those files from Windows Explorer at `\\wsl$\Ubuntu\home\<your-linux-user>\tempo-terminal\` if you ever need to edit `.env` from Notepad instead of `nano`.
 
 ---
 

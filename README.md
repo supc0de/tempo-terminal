@@ -15,11 +15,11 @@
 
 **macOS / Linux:**
 ```bash
-bash install.sh                # installs Node, jq, Tempo CLI; copies sources to ~/tempo-bot
+bash install.sh                # installs Node, jq, Tempo CLI; copies sources to ~/tempo-terminal
 tempo wallet login             # creates / connects wallet via passkey
 tempo wallet -t whoami         # verify
 tempo wallet fund              # deposit ~$10–40 USDC (Base recommended)
-cd ~/tempo-bot && ./start.sh   # http://localhost:3000
+cd ~/tempo-terminal && ./start.sh   # http://localhost:3000
 ```
 
 **Windows (WSL):**
@@ -31,7 +31,7 @@ After reboot, Ubuntu opens — set Linux username/password. Then inside Ubuntu:
 ```bash
 cd /mnt/c/path/to/tempo-terminal && bash install.sh
 tempo wallet login && tempo wallet fund
-cd ~/tempo-bot && ./start.sh   # http://localhost:3000
+cd ~/tempo-terminal && ./start.sh   # http://localhost:3000
 ```
 
 Full setup guide: **[GUIDE.md](./GUIDE.md)** · Release notes: **[CHANGELOG.md](./CHANGELOG.md)**

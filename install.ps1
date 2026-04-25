@@ -4,7 +4,7 @@
 #
 #  One-shot installer:
 #    - Installs Node.js 20 natively on Windows (winget)
-#    - Copies the bot to %USERPROFILE%\tempo-bot
+#    - Copies the bot to %USERPROFILE%\tempo-terminal
 #    - Runs npm install
 #    - Auto-installs Tempo CLI inside WSL (used only for wallet)
 #
@@ -123,7 +123,7 @@ if ($nodeOk) {
 # -------------------------------------------------
 #  4. Create project directory
 # -------------------------------------------------
-$installDir = Join-Path $env:USERPROFILE "tempo-bot"
+$installDir = Join-Path $env:USERPROFILE "tempo-terminal"
 
 Write-Info "Installing to: $installDir"
 
