@@ -1,0 +1,25 @@
+# dependencies
+node_modules/
+
+# secrets & user data — never commit
+.env
+.env.local
+
+# runtime artifacts
+bot-state.json
+bot.log
+spending.csv
+spending.*.csv
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# editor
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Claude Code workspace
+.claude/
