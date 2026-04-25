@@ -22,17 +22,16 @@ tempo wallet fund              # deposit ~$10–40 USDC (Base recommended)
 cd ~/tempo-bot && ./start.sh   # http://localhost:3000
 ```
 
-**Windows (one command, after WSL is installed):**
+**Windows (WSL):**
+
 ```powershell
-powershell -ExecutionPolicy Bypass -File install.ps1
+wsl --install -d Ubuntu        # admin PowerShell, then reboot
 ```
-The installer puts Node.js on Windows natively, copies the bot to `%USERPROFILE%\tempo-bot`, runs `npm install`, auto-installs Tempo CLI inside WSL (used only for the wallet), and drops `start.bat` / `start-telegram.bat` / `wallet.bat` on your Desktop.
-
-Then double-click `wallet.bat` → option 2 (login) → option 3 (fund), and `start.bat` to launch.
-
-If you don't have WSL yet, run this once first (admin PowerShell, then reboot):
-```powershell
-wsl --install -d Ubuntu
+After reboot, Ubuntu opens — set Linux username/password. Then inside Ubuntu:
+```bash
+cd /mnt/c/path/to/tempo-terminal && bash install.sh
+tempo wallet login && tempo wallet fund
+cd ~/tempo-bot && ./start.sh   # http://localhost:3000
 ```
 
 Full setup guide: **[GUIDE.md](./GUIDE.md)** · Release notes: **[CHANGELOG.md](./CHANGELOG.md)**
@@ -84,8 +83,8 @@ telegram-bot.js    — Telegram bot (long-poll, no webhook needed)
 tempo-cli.js       — Cross-platform Tempo CLI wrapper (PATH → ~/.tempo/bin → wsl tempo)
 public/index.html  — Web UI frontend (vanilla JS, dark theme)
 
-install.sh         — macOS/Linux installer (copies sources to ~/tempo-bot)
-install.ps1        — Windows installer
+install.sh         — Universal installer (macOS, Linux, Windows-via-WSL)
+install.ps1        — Optional native-Windows installer (advanced; see GUIDE.md)
 
 .env.example       — Documented config template
 CHANGELOG.md       — Release notes

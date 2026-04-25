@@ -27,10 +27,10 @@ server.js         — Web UI backend (Express)
 telegram-bot.js   — Telegram bot
 public/index.html — Web UI frontend
 tempo-cli.js      — Cross-platform Tempo CLI wrapper
-install.sh        — macOS/Linux installer (copies sources to ~/tempo-bot)
-install.ps1       — Windows installer
-tempo-login.js    — Optional Windows device-code login bypass
-proxy.js          — Optional HTTP/CONNECT proxy (Windows host → WSL VPN)
+install.sh        — Universal installer (macOS, Linux, Windows-via-WSL)
+install.ps1       — Optional native-Windows installer (advanced — see Windows section)
+tempo-login.js    — Optional Windows device-code login helper (region bypass)
+proxy.js          — Optional HTTP/CONNECT proxy (Windows host → WSL VPN bridge)
 ```
 
 ---
@@ -143,87 +143,106 @@ launchctl load ~/Library/LaunchAgents/com.sup-cartel.tempo.plist
 
 # Windows
 
-Windows runs the bot from WSL (Windows Subsystem for Linux).
-
-The recommended Windows path is **one PowerShell command**: `install.ps1` does the rest, including dropping Desktop launchers. WSL is used only as a host for Tempo CLI; the bot itself runs as a native Windows Node.js process.
+The bot runs entirely inside **WSL** (Windows Subsystem for Linux). This keeps the install identical to macOS/Linux — same `install.sh`, same Tempo CLI, same `.env`, same `start.sh`. Three stages: install WSL → install bot → launch.
 
 ### Requirements
 
 - Windows 10 build 19041+ or Windows 11
-- ~2 GB free disk space (for WSL + Ubuntu)
+- ~2 GB free disk space (WSL + Ubuntu)
 
-### 1. Install WSL (one-time, requires admin + reboot)
+---
 
-PowerShell **as Administrator**:
+## Stage 1 · Install WSL (one-time)
+
+Open **PowerShell as Administrator** and run:
+
 ```powershell
 wsl --install -d Ubuntu
 ```
-Reboot. Ubuntu opens automatically — create a Linux username and password when prompted, then close that window.
 
-### 2. Run the installer
+**Reboot** the computer.
 
-In a regular PowerShell, from inside the project folder:
-```powershell
-powershell -ExecutionPolicy Bypass -File install.ps1
+After reboot Ubuntu opens automatically. Create a Linux username + password when prompted (these are local to WSL — separate from your Windows account). Close that window when done.
+
+> If the Ubuntu window doesn't appear: open Start → search "Ubuntu" → launch it manually.
+
+---
+
+## Stage 2 · Install the bot inside WSL
+
+Open WSL (Start menu → "Ubuntu", or just type `wsl` in any PowerShell).
+
+Navigate to the project folder. Two cases:
+
+**A) The project lives on your Windows Desktop / Downloads:**
+```bash
+cd /mnt/c/Users/YOUR_WINDOWS_USERNAME/Desktop/tempo-terminal
 ```
 
-What it does:
-- Installs Node.js 20 LTS on Windows via `winget` (skipped if already present).
-- Copies the bot to `%USERPROFILE%\tempo-bot` (preserves any existing `.env`, `bot-state.json`, `spending.csv`).
-- Runs `npm install`.
-- Auto-detects an Ubuntu/Debian WSL distro and installs Tempo CLI inside it.
-- Drops a `Tempo Bot` folder on your Desktop with three launchers: `start.bat`, `start-telegram.bat`, `wallet.bat`.
+**B) Cloning fresh inside WSL:**
+```bash
+cd ~ && git clone https://github.com/supc0de/tempo-terminal.git && cd tempo-terminal
+```
 
-### 3. Log in to your wallet
+Run the installer:
+```bash
+bash install.sh
+```
 
-Double-click `wallet.bat` on your Desktop → option **2** (Login). The browser opens — authenticate with Windows Hello or your passkey.
+What happens (5–8 min on a fresh box):
+- Installs Node.js 20 LTS
+- Installs `jq`
+- Installs Tempo CLI to `~/.tempo/bin/tempo`
+- Copies the bot to `~/tempo-bot/`
+- `npm install`
 
-> If you see a region error (HTTP 451), you need a VPN active before this step. Two ways: run the VPN on Windows and use [`proxy.js`](./proxy.js) to expose it to WSL, **or** run the device-code helper from PowerShell:
-> ```powershell
-> node tempo-login.js
-> ```
-> It does the login from the host browser and writes credentials directly into WSL's `~/.tempo/wallet-auth.json`.
+Authorize your wallet:
+```bash
+tempo wallet login          # opens your Windows browser → Windows Hello / passkey
+tempo wallet -t whoami      # verify (-t = compact output)
+tempo wallet fund           # deposit $10–40 USDC (Base recommended)
+```
 
-### 4. Fund your wallet
+> **HTTP 451 region error?** Two options: (a) start a VPN on the Windows host and run `node proxy.js` (from `~/tempo-terminal`) to expose it to WSL, then `export ALL_PROXY=http://$(hostname -I | awk '{print $1}'):8888` and retry; (b) run `node tempo-login.js` from PowerShell on the Windows side — it does the login from the host browser and writes the credentials directly into WSL's `~/.tempo/wallet-auth.json`.
 
-`wallet.bat` → option **3** (Add funds). Pick network / token, send ~$10–40 USDC (Base recommended), funds arrive in 1–5 minutes.
+---
 
-Verify any time via `wallet.bat` → option **1** (Show wallet info).
+## Stage 3 · Launch
 
-### 5. Telegram setup (optional)
+```bash
+cd ~/tempo-bot
+./start.sh                  # Web UI → http://localhost:3000 (open in any Windows browser)
+```
+
+For Telegram (separate WSL terminal):
+```bash
+cd ~/tempo-bot && ./start-telegram.sh
+```
+
+Stop either with `Ctrl+C`.
+
+### Telegram setup (optional)
 
 - **@BotFather** → `/newbot` → copy the token
 - **@userinfobot** → `/start` → copy your numeric ID
 
-`wallet.bat` → option **4** (Edit configuration) opens `.env` in Notepad. Fill in:
+```bash
+nano ~/tempo-bot/.env
+```
+Fill in:
 ```env
 TELEGRAM_BOT_TOKEN=your_token_here
 ALLOWED_USERS=your_telegram_user_id
 ```
+Multiple users: `ALLOWED_USERS=111111,222222,333333`. **`ALLOWED_USERS` is required** — without it, anyone who finds your bot can drain your wallet.
 
-Multiple users: `ALLOWED_USERS=111111,222222,333333`. Without `ALLOWED_USERS` the bot is open — anyone who finds it can drain your wallet.
+Save (`Ctrl+O` → Enter → `Ctrl+X`), then `./start-telegram.sh`.
 
-### 6. Launch
+---
 
-- **Web UI** — double-click `start.bat` on your Desktop. The browser opens at http://localhost:3000 automatically.
-- **Telegram** — double-click `start-telegram.bat` (separate window).
+### Native Windows installer (advanced, optional)
 
-Stop either with `Ctrl+C`.
-
-### Manual / WSL-only flow (advanced)
-
-If you'd rather run the bot from inside WSL and skip the native-Windows installer entirely, here is the long path:
-
-```bash
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - && sudo apt-get install -y nodejs
-curl -fsSL https://tempo.xyz/install | bash && source ~/.bashrc
-tempo wallet login && tempo wallet fund
-cd /mnt/c/Users/YOUR_USERNAME/path/to/tempo-terminal
-npm install
-cp .env.example .env && nano .env
-node server.js              # Web UI
-node telegram-bot.js        # Telegram (separate terminal)
-```
+The repo also ships [`install.ps1`](./install.ps1) for users who want the bot to run as a **native Windows Node.js process** with only the `tempo` CLI in WSL. The bridge `wsl tempo …` adds ~50–200 ms per signed request but lets you keep `.env` and logs on the Windows filesystem (Notepad-friendly). Use only if you specifically need that hybrid setup; otherwise the WSL-native path above is simpler and equally fast.
 
 ---
 
@@ -292,17 +311,22 @@ Default: `openai/gpt-4o-mini`. For serious analysis: `anthropic/claude-4.6-sonne
 
 **Ubuntu not opening after reboot** → Open Start menu, search "Ubuntu", launch it manually.
 
-**`tempo: command not found` in WSL** → Run: `source ~/.bashrc`
+**`The Windows Subsystem for Linux has not been enabled`** → Run as admin: `dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart` and `dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart`, then reboot.
+
+**`0x80370102`** → CPU virtualization disabled in BIOS/UEFI. Task Manager → Performance → CPU should say "Virtualization: Enabled".
+
+**`tempo: command not found` after install** → Run: `source ~/.bashrc` in WSL (PATH refresh).
 
 **`tempo wallet login` region error (HTTP 451)** → Tempo is geo-restricted in some regions. Two options:
-1. VPN inside WSL before running the command, or
-2. From Windows PowerShell run `node tempo-login.js` — does the device-code login from your Windows browser and writes credentials directly into WSL's `~/.tempo/`.
+1. Run a VPN inside WSL before this command, or
+2. Run a VPN on Windows + `node proxy.js` from `~/tempo-terminal` on the host, then in WSL: `export ALL_PROXY=http://$(hostname -I | awk '{print $1}'):8888 && tempo wallet login`, or
+3. From Windows PowerShell: `node tempo-login.js` — device-code login from the host browser, writes credentials directly into WSL's `~/.tempo/wallet-auth.json`.
 
-**`EADDRINUSE: address already in use`** → Port 3000 busy: `fuser -k 3000/tcp`, then retry.
+**`EADDRINUSE: address already in use`** → Port 3000 busy: `lsof -ti :3000 \| xargs kill` (in WSL), then retry.
 
-**`0x80370102`** → Virtualization disabled in BIOS. Task Manager → Performance → CPU should say "Virtualization: Enabled".
+**`node: command not found` in WSL** → Node.js wasn't installed correctly. Re-run `bash install.sh` or install manually: `curl -fsSL https://deb.nodesource.com/setup_20.x \| sudo -E bash - && sudo apt-get install -y nodejs`.
 
-**`node: command not found` in WSL** → Node.js is not installed in WSL. Run step 2 of the Windows guide.
+**Web UI loads but `/balance` is empty** → Check `tempo wallet -t whoami` in WSL — if it errors, your wallet isn't logged in. If it succeeds, restart the bot: `Ctrl+C` then `./start.sh` (the JSON-first balance parser landed in v3.1; older builds returned `usdc: null` against modern Tempo CLI output).
 
 ### General
 
@@ -330,13 +354,17 @@ Default: `openai/gpt-4o-mini`. For serious analysis: `anthropic/claude-4.6-sonne
 └── start-telegram.sh    ← launcher: telegram
 ```
 
-### Windows / WSL
+### Windows / WSL (after install.sh)
+Same layout as macOS / Linux — everything lives inside the WSL home:
 ```
-/mnt/c/Users/YOUR_USERNAME/Desktop/tempo-terminal/
+~/tempo-bot/                 (= \\wsl$\Ubuntu\home\YOUR_LINUX_USERNAME\tempo-bot)
 ├── server.js, telegram-bot.js, tempo-cli.js, public/index.html
+├── package.json
 ├── .env, bot-state.json, spending.csv
-└── ...
+├── start.sh
+└── start-telegram.sh
 ```
+You can browse those files from Windows Explorer at `\\wsl$\Ubuntu\home\<your-linux-user>\tempo-bot\` if you ever need to edit `.env` from Notepad instead of `nano`.
 
 ---
 
