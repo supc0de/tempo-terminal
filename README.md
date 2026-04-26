@@ -13,26 +13,29 @@
 
 ## Quick start
 
-**macOS / Linux:**
+**macOS / Linux** (one block, copy-paste):
 ```bash
-bash install.sh                # installs Node, jq, Tempo CLI; copies sources to ~/tempo-terminal
-tempo wallet login             # creates / connects wallet via passkey
-tempo wallet -t whoami         # verify
-tempo wallet fund              # deposit ~$10–40 USDC (Base recommended)
-cd ~/tempo-terminal && ./start.sh   # http://localhost:3000
+cd /tmp && git clone https://github.com/supc0de/tempo-terminal && cd tempo-terminal
+bash install.sh
+tempo wallet login
+tempo wallet fund
+cd ~/tempo-terminal && ./start.sh    # http://localhost:3000
 ```
 
-**Windows (WSL):**
-
+**Windows (WSL)** — first install WSL once (admin PowerShell, then reboot):
 ```powershell
-wsl --install -d Ubuntu        # admin PowerShell, then reboot
+wsl --install -d Ubuntu
 ```
-After reboot, Ubuntu opens — set Linux username/password. Then inside Ubuntu:
+After reboot, Ubuntu opens — set a Linux username/password. Then inside Ubuntu:
 ```bash
-cd /mnt/c/path/to/tempo-terminal && bash install.sh
-tempo wallet login && tempo wallet fund
-cd ~/tempo-terminal && ./start.sh   # http://localhost:3000
+cd /tmp && git clone https://github.com/supc0de/tempo-terminal && cd tempo-terminal
+bash install.sh
+tempo wallet login
+tempo wallet fund
+cd ~/tempo-terminal && ./start.sh    # http://localhost:3000 (open in your Windows browser)
 ```
+
+> Clone the repo into any path **other than** `~/tempo-terminal` — that path is the install target, and the installer will refuse to clobber its own sources. `/tmp` works fine for this.
 
 Full setup guide: **[GUIDE.md](./GUIDE.md)** · Release notes: **[CHANGELOG.md](./CHANGELOG.md)**
 

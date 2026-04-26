@@ -180,8 +180,9 @@ cd /mnt/c/Users/YOUR_WINDOWS_USERNAME/Desktop/tempo-terminal
 
 **B) Cloning fresh inside WSL:**
 ```bash
-cd ~ && git clone https://github.com/supc0de/tempo-terminal.git && cd tempo-terminal
+cd /tmp && git clone https://github.com/supc0de/tempo-terminal.git && cd tempo-terminal
 ```
+> Use `/tmp` (or any non-`~/tempo-terminal` path) — the installer copies sources from the script directory into `~/tempo-terminal/` and will refuse to run if those two paths are the same (it would otherwise erase its own sources).
 
 Run the installer:
 ```bash
