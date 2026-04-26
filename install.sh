@@ -93,7 +93,25 @@ done
 log_ok "Source files present"
 
 # ───────────────────────────────────────────────────────────────
-# 3. Existing installation: confirm + back up
+# 3. Refuse self-clobbering install
+# ───────────────────────────────────────────────────────────────
+# If the user cloned the repo directly into $INSTALL_DIR (e.g. they put it at
+# ~/tempo-terminal because that matches the repo name), the rm -rf below
+# would wipe our own sources before we copy them. Detect via realpath and
+# bail with an actionable error instead of nuking their files.
+RESOLVED_SCRIPT_DIR=$(cd "$SCRIPT_DIR" && pwd -P)
+RESOLVED_INSTALL_DIR=$(cd "$(dirname "$INSTALL_DIR")" 2>/dev/null && pwd -P)/$(basename "$INSTALL_DIR")
+if [ "$RESOLVED_SCRIPT_DIR" = "$RESOLVED_INSTALL_DIR" ]; then
+    log_error "Source folder and install target are the same: $INSTALL_DIR"
+    log_error "This would erase the project sources. Move the source elsewhere first."
+    log_info  "Easiest fix:"
+    log_info  "  cd /tmp && git clone https://github.com/supc0de/tempo-terminal.git"
+    log_info  "  cd tempo-terminal && bash install.sh"
+    exit 1
+fi
+
+# ───────────────────────────────────────────────────────────────
+# 4. Existing installation: confirm + back up
 # ───────────────────────────────────────────────────────────────
 BACKUP_ENV=""
 BACKUP_STATE=""
