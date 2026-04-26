@@ -84,7 +84,6 @@ tempo-cli.js       — Cross-platform Tempo CLI wrapper (PATH → ~/.tempo/bin �
 public/index.html  — Web UI frontend (vanilla JS, dark theme)
 
 install.sh         — Universal installer (macOS, Linux, Windows-via-WSL)
-install.ps1        — Optional native-Windows installer (advanced; see GUIDE.md)
 
 .env.example       — Documented config template
 CHANGELOG.md       — Release notes

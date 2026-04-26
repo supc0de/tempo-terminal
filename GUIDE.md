@@ -28,8 +28,7 @@ telegram-bot.js   — Telegram bot
 public/index.html — Web UI frontend
 tempo-cli.js      — Cross-platform Tempo CLI wrapper
 install.sh        — Universal installer (macOS, Linux, Windows-via-WSL)
-install.ps1       — Optional native-Windows installer (advanced — see Windows section)
-tempo-login.js    — Optional Windows device-code login helper (region bypass)
+tempo-login.js    — Optional device-code login helper (WSL region bypass)
 proxy.js          — Optional HTTP/CONNECT proxy (Windows host → WSL VPN bridge)
 ```
 
@@ -240,24 +239,6 @@ Save (`Ctrl+O` → Enter → `Ctrl+X`), then `./start-telegram.sh`.
 
 ---
 
-### Native Windows installer (advanced, optional)
-
-The repo also ships [`install.ps1`](./install.ps1) for users who want the bot to run as a **native Windows Node.js process** with only the `tempo` CLI in WSL. The bridge `wsl tempo …` adds ~50–200 ms per signed request but lets you keep `.env` and logs on the Windows filesystem (Notepad-friendly). Use only if you specifically need that hybrid setup; otherwise the WSL-native path above is simpler and equally fast.
-
-```powershell
-# From inside the project folder, in regular PowerShell:
-powershell -ExecutionPolicy Bypass -File install.ps1
-```
-
-After it finishes (Node 20 installed natively, Tempo CLI installed inside WSL, sources copied to `%USERPROFILE%\tempo-terminal`), launch from PowerShell:
-
-```powershell
-cd $env:USERPROFILE\tempo-terminal
-node server.js              # Web UI  → http://localhost:3000
-node telegram-bot.js        # Telegram (run in a second PowerShell window)
-```
-
-Wallet operations still go through WSL — call them as `wsl tempo wallet login`, `wsl tempo wallet -t whoami`, `wsl tempo wallet fund` from PowerShell, or open Ubuntu and run them directly.
 
 ---
 

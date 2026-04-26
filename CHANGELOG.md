@@ -44,6 +44,7 @@ to keep them closed.
 - **`README.md` and `GUIDE.md` rewritten** for accuracy against the current Tempo CLI 1.6 surface.
 
 ### Removed
+- `install.ps1` (native Windows installer) — turned out to be redundant; the universal `install.sh` runs identically inside WSL and was the source of every Windows-side bug we hit (PowerShell here-string parsing, line-ending differences, `winget` quirks, drift between embedded templates and shipping sources). Windows users now follow the WSL path documented in [GUIDE.md](./GUIDE.md#windows). The `proxy.js` and `tempo-login.js` helpers stay as optional WSL VPN / region-bypass tools.
 - `@noble/hashes` dependency — was declared but never imported.
 
 ### Security
