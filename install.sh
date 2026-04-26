@@ -128,6 +128,15 @@ if [ "$OS" = "macos" ] && ! has_cmd brew; then
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
 
+# Refresh apt index ONCE before any apt-get install. WSL Ubuntu images ship
+# with stale package lists — without this refresh, `apt-get install` will hit
+# 404s when the cached version no longer exists upstream (security pocket
+# rolls over weekly). nodesource's setup script already runs `apt-get update`
+# but only after we'd already need jq, so do it up front for the whole step.
+if [ "$OS" != "macos" ] && (! has_cmd node || ! has_cmd jq); then
+    sudo apt-get update -qq || log_warn "apt-get update returned non-zero; continuing anyway"
+fi
+
 if ! has_cmd node || [ "$(node -v | sed 's/v//' | cut -d. -f1)" -lt 18 ]; then
     log_warn "Installing Node.js 20 LTS..."
     if [ "$OS" = "macos" ]; then
@@ -139,11 +148,17 @@ if ! has_cmd node || [ "$(node -v | sed 's/v//' | cut -d. -f1)" -lt 18 ]; then
 fi
 log_ok "Node.js $(node --version)"
 
+# jq is a convenience for piping `tempo wallet whoami` etc., not a hard
+# dependency for the bot itself. If apt is stuck on a stale index we still
+# want the install to complete — warn instead of failing the whole script.
 if ! has_cmd jq; then
-    if [ "$OS" = "macos" ]; then brew install jq
-    else sudo apt-get install -y jq; fi
+    if [ "$OS" = "macos" ]; then
+        brew install jq || log_warn "jq install failed (optional)"
+    else
+        sudo apt-get install -y jq || log_warn "jq install failed (optional — bot does not need it)"
+    fi
 fi
-log_ok "jq ready"
+has_cmd jq && log_ok "jq ready" || log_warn "jq missing (skipped — non-fatal)"
 
 # ───────────────────────────────────────────────────────────────
 # 5. Tempo CLI
